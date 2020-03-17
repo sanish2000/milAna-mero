@@ -12,11 +12,14 @@ ul{
     list-style: none;
 }
 
-li{
+.nav_item {
     display: inline-block;
     line-height: 50px;
-    color: #fff;
     padding: 0 30px;
+}
+
+.nav_item a{
+    color: #fff;
 }
 
 .nav_item:hover{

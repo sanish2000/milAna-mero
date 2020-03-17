@@ -1,30 +1,46 @@
 import React from 'react';
 import './login-component.css'
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 export class LoginComponent extends React.Component {
     constructor() {
         super();
         this.state = {
-            username: '',
-            password: '',
-            usernameErr: '',
-            passwordErr: '',
+            data: {
+
+            },
+            error: {
+
+            },
             isSubmitting: false,
             isValidForm: false,
             remember_me: false
         }
     }
 
-    handleChange(e) {
+    componentDidMount() {
+        if (localStorage.getItem('remember_me')) {
+            this.props.history.push('/dashboard');
+        }
+    }
+
+
+    //either use handle change as an arrow function or bind it when calling it
+    handleChange = (e) => {
         let { type, name, value, checked } = e.target;
         if (type === 'checkbox') {
             value = checked;
+            this.rememberMe(value)
         }
 
         // this.setState({
         //     [name]: value
         // });
         this.setState((preState) => ({
-            [name]: value
+            data: {
+                ...preState.data,
+                [name]: value
+            }
         }), () => {
             // callback block
             this.validateForm(name);
@@ -35,6 +51,13 @@ export class LoginComponent extends React.Component {
         // this.state.username = e.target.value
     }
 
+
+
+    rememberMe(val) {
+        console.log('val>>', val)
+        /// web storage
+        localStorage.setItem('remember_me', val)
+    }
 
     validateForm(fieldName) {
         let errMsg;
@@ -56,22 +79,46 @@ export class LoginComponent extends React.Component {
                 break;
         }
 
-        this.setState({
-            [fieldName + 'Err']: errMsg
-        })
+        this.setState((pre) => ({
+            error: {
+                ...pre.error,
+                [fieldName]: errMsg
+            }
+        }))
 
     }
+
 
     handleSubmit = (e) => {
         e.preventDefault();
         this.setState({
             isSubmitting: true
         })
-        setTimeout(() => {
-            this.setState({
-                isSubmitting: false
+
+        axios.post(
+            'http://localhost:3030/api/new/login',
+            this.state.data,
+            {
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                params: {},
+                responseType: 'json'
+            }
+        )
+            .then(response => {
+                console.log('success in axios call>>', response)
+                localStorage.setItem('token', response.data.token)
+                localStorage.setItem('user', JSON.stringify(response.data.user))
+                this.props.history.push('/dashboard')
+
             })
-        }, 2000)
+            .catch(err => {
+                console.log('failure in axios', err.response)
+                this.setState({
+                    isSubmitting: false
+                })
+            })
     };
 
     render() {
@@ -87,10 +134,10 @@ export class LoginComponent extends React.Component {
                         <br></br>
                         <label htmlFor="username">Username</label>
                         <input className="form-control" id="username" type="text" placeholder="username" name="username" onChange={this.handleChange}></input>
-                        <p className="danger">{this.state.usernameErr}</p>                        <br></br>
+                        <p className="danger">{this.state.usernameErr}</p>
                         <label htmlFor="password">Password</label>
-                        <input className="form-control" id="password" type="password" placeholder="password" name="password" onChange={this.handleChange}></input>
-                        <p className="danger">{this.state.usernameErr}</p>                        <br></br>
+                        <input className="form-control" id="password" type="password" placeholder="********" name="password" onChange={this.handleChange}></input>
+                        <p className="danger">{this.state.passwordErr}</p>
                         <div className="form-check">
                             <input className="form-check-input" id="rememberME" type="checkbox" onChange={this.handleChange}></input>
                             <label htmlFor="rememberME">Rembember Me</label>
@@ -100,10 +147,10 @@ export class LoginComponent extends React.Component {
                         <br></br>
                         <br></br>
                         <p>
-                            <a href="./index.html">forgot password?</a>
+                            <Link to="./index.html">forgot password?</Link>
                         </p>
                         <p>
-                            Don't have an account? <a href="./index.html"> Register here</a>
+                            Don't have an account? <Link to="/register"> Register here</Link>
                         </p>
                     </form>
                 </div>

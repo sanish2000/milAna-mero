@@ -1,12 +1,11 @@
 import React from 'react';
-import { Header } from './components/common/header/header.component';
+import AppRoutes from './route/routing';
 
-import { LoginComponent } from './components/auth/login/login-component';
+
 
 const App= function(){
     return <div className = "container">
-        <Header isLoggedIn={false}></Header>
-        <LoginComponent></LoginComponent>
+        <AppRoutes></AppRoutes>
     </div>
 }
 export default App;
